@@ -38,6 +38,9 @@ docker run -p 8790:8790 hotstar-party-relay
 A plain `GET /` returns `hotstar-party relay`, which is enough for health
 checks.
 
+`deploy/` holds an example Caddyfile and systemd user units for running the
+relay and Caddy as an unprivileged user.
+
 ## 2. Install the extension
 
 Both people do this once.
@@ -85,28 +88,3 @@ same room on its own.
 - Hotstar's keyboard shortcuts and the on-screen controls all work, since
   the extension listens to the player itself rather than the buttons.
 
-## Deploying without root
-
-`deploy/` holds the files used on a plain Ubuntu host where the deploy user
-has no Docker access and no passwordless sudo. Everything lives under the
-user's home and runs as user-level systemd services, which survive logout
-because lingering is enabled for the user.
-
-1. Clone this repository to `~/hotstar-party`.
-2. Install Node under the home directory, for example by unpacking the
-   official tarball into `~/.local/opt/node` and linking `node` into
-   `~/.local/bin`. Run `npm ci --omit=dev` in `server/`.
-3. Download the Caddy release tarball, verify it against the published
-   checksums, and put the binary at `~/.local/bin/caddy`.
-4. Copy both unit files from `deploy/` into `~/.config/systemd/user/`, then
-   `systemctl --user daemon-reload` and `systemctl --user enable --now` each
-   of them.
-5. Two steps need root once. `setcap cap_net_bind_service=+ep` on the Caddy
-   binary lets it bind 80 and 443 as the unprivileged user. Writing
-   `net.mptcp.enabled = 0` to `/etc/sysctl.d/99-no-mptcp.conf` and applying
-   it turns off MPTCP on the host, matching the `GODEBUG=multipathtcp=0` set
-   on the Caddy unit, as a mitigation for CVE-2026-98432.
-
-The Caddyfile uses an sslip.io hostname that resolves to the host's own IP,
-so no DNS record is required. Replace it with a real hostname if you have
-one.
