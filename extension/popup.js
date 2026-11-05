@@ -60,6 +60,11 @@ $('saveServer').onclick = async () => {
   const server = $('server').value.trim() || DEFAULT_SERVER;
   await chrome.storage.sync.set({ server });
   $('server').value = server;
+  const button = $('saveServer');
+  button.textContent = 'Saved';
+  setTimeout(() => {
+    button.textContent = 'Save';
+  }, 1500);
   const s = await call({ type: 'getState' });
   if (s && s.room) render(await call({ type: 'join', room: s.room }));
 };
