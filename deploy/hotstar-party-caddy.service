@@ -1,0 +1,13 @@
+[Unit]
+Description=Caddy TLS front for the Hotstar Party relay
+After=network-online.target hotstar-party-relay.service
+
+[Service]
+Environment=GODEBUG=multipathtcp=0
+ExecStart=%h/.local/bin/caddy run --config %h/hotstar-party/deploy/Caddyfile
+ExecReload=%h/.local/bin/caddy reload --config %h/hotstar-party/deploy/Caddyfile
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

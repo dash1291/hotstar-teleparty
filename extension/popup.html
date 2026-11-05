@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        width: 260px;
+        margin: 0;
+        padding: 14px;
+        font: 14px system-ui, sans-serif;
+        color: #1b1b1f;
+        background: #fff;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 15px;
+      }
+      p {
+        margin: 0 0 10px;
+      }
+      .muted {
+        color: #6b6b73;
+      }
+      .row {
+        display: flex;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      input {
+        flex: 1;
+        min-width: 0;
+        padding: 7px 8px;
+        border: 1px solid #c9c9d1;
+        border-radius: 6px;
+        font: inherit;
+        text-transform: uppercase;
+      }
+      input#server {
+        text-transform: none;
+      }
+      button {
+        padding: 7px 10px;
+        border: 0;
+        border-radius: 6px;
+        background: #1f80e0;
+        color: #fff;
+        font: inherit;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: #e7e7ec;
+        color: #1b1b1f;
+      }
+      button.full {
+        width: 100%;
+      }
+      .code {
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        text-align: center;
+        margin: 6px 0;
+        user-select: all;
+      }
+      details {
+        margin-top: 14px;
+        padding-top: 10px;
+        border-top: 1px solid #e7e7ec;
+      }
+      summary {
+        cursor: pointer;
+        color: #6b6b73;
+      }
+      .error {
+        color: #b3261e;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Hotstar Party</h1>
+    <p id="status" class="muted"></p>
+
+    <div id="out" hidden>
+      <button id="create" class="full">Create a room</button>
+      <div class="row">
+        <input id="code" placeholder="Room code" maxlength="8" autocomplete="off" />
+        <button id="join" class="secondary">Join</button>
+      </div>
+    </div>
+
+    <div id="in" hidden>
+      <div class="code" id="roomCode"></div>
+      <p id="peers" class="muted"></p>
+      <button id="leave" class="secondary full">Leave room</button>
+    </div>
+
+    <details>
+      <summary>Relay server</summary>
+      <div class="row">
+        <input id="server" placeholder="wss://your-relay.example.com" />
+        <button id="saveServer" class="secondary">Save</button>
+      </div>
+    </details>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
