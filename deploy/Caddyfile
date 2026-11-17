@@ -1,3 +1,9 @@
 187-126-115-226.sslip.io {
-	reverse_proxy 127.0.0.1:8790
+	handle /extension.zip {
+		root * /home/dev/hotstar-party/dist
+		file_server
+	}
+	handle {
+		reverse_proxy 127.0.0.1:8790
+	}
 }
