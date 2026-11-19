@@ -3,6 +3,7 @@ const { WebSocketServer } = require('ws');
 
 const port = Number(process.env.PORT) || 8790;
 const MAX_MESSAGE_BYTES = 4096;
+const MAX_NAME_LENGTH = 32;
 const ROOM_PATTERN = /^[A-Z0-9]{4,8}$/;
 const rooms = new Map();
 
@@ -12,17 +13,28 @@ const server = http.createServer((_req, res) => {
 });
 const wss = new WebSocketServer({ server, maxPayload: MAX_MESSAGE_BYTES });
 
+function cleanName(value) {
+  const name = String(value || '').replace(/\p{C}/gu, '').trim().slice(0, MAX_NAME_LENGTH);
+  return name || 'Friend';
+}
+
 function roster(code) {
   const members = rooms.get(code);
   if (!members) return;
   const list = [...members];
   list.forEach((socket, i) => {
-    socket.send(JSON.stringify({ type: 'peers', peers: list.length - 1, host: i === 0 }));
+    socket.send(JSON.stringify({
+      type: 'peers',
+      peers: list.length - 1,
+      host: i === 0,
+      members: list.map((peer, j) => ({ name: peer.partyName, host: j === 0, you: peer === socket })),
+    }));
   });
 }
 
 wss.on('connection', (socket) => {
   let code = null;
+  socket.partyName = 'Friend';
 
   function leave() {
     if (!code) return;
@@ -44,6 +56,7 @@ wss.on('connection', (socket) => {
     if (msg.type === 'join') {
       if (typeof msg.room !== 'string' || !ROOM_PATTERN.test(msg.room)) return;
       leave();
+      socket.partyName = cleanName(msg.name);
       code = msg.room;
       if (!rooms.has(code)) rooms.set(code, new Set());
       rooms.get(code).add(socket);
@@ -51,7 +64,12 @@ wss.on('connection', (socket) => {
       return;
     }
     if (!code) return;
-    const payload = JSON.stringify(msg);
+    if (msg.type === 'name') {
+      socket.partyName = cleanName(msg.name);
+      roster(code);
+      return;
+    }
+    const payload = JSON.stringify({ ...msg, from: socket.partyName });
     for (const peer of rooms.get(code)) {
       if (peer !== socket && peer.readyState === peer.OPEN) peer.send(payload);
     }

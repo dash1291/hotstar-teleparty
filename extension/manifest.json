@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
   "name": "Hotstar Party",
-  "version": "0.1.0",
-  "description": "Keep two Hotstar players in sync: play, pause and seek together.",
+  "version": "0.2.0",
+  "description": "Watch Hotstar together: play, pause and seek in sync, with chat.",
   "permissions": ["storage"],
   "host_permissions": ["https://*.hotstar.com/*"],
   "content_scripts": [
     {
       "matches": ["https://*.hotstar.com/*"],
-      "js": ["content.js"],
+      "js": ["defaults.js", "content.js"],
+      "css": ["party.css"],
       "run_at": "document_idle"
     }
   ],

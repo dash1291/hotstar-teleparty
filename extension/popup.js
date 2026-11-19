@@ -1,4 +1,4 @@
-const DEFAULT_SERVER = 'ws://localhost:8790';
+const DEFAULT_SERVER = HOTSTAR_PARTY_DEFAULTS.server;
 const $ = (id) => document.getElementById(id);
 
 async function call(msg) {
@@ -37,9 +37,10 @@ function render(s) {
     status.textContent = 'Could not reach the relay server. Check the server URL below.';
     status.className = 'error';
   } else status.textContent = s.isHost ? 'You are the host. Your player leads.' : 'Following the host\'s player.';
-  if (s.peers === 0) $('peers').textContent = 'Waiting for your friend to join with this code.';
-  else if (s.mismatch) $('peers').textContent = 'Your friend is on a different title.';
-  else $('peers').textContent = s.peers === 1 ? 'Friend connected, in sync.' : `${s.peers} friends connected.`;
+  const others = (s.members || []).filter((m) => !m.you).map((m) => m.name);
+  if (others.length === 0) $('peers').textContent = 'Waiting for your friend to join with this code.';
+  else if (s.mismatch) $('peers').textContent = `${others.join(', ')} is on a different title.`;
+  else $('peers').textContent = `Watching with ${others.join(', ')}.`;
 }
 
 async function refresh() {
@@ -56,6 +57,13 @@ $('code').onkeydown = (e) => {
   if (e.key === 'Enter') $('join').click();
 };
 $('leave').onclick = async () => render(await call({ type: 'leave' }));
+
+let nameTimer = null;
+$('name').oninput = () => {
+  clearTimeout(nameTimer);
+  nameTimer = setTimeout(() => chrome.storage.sync.set({ name: $('name').value.trim() }), 400);
+};
+
 $('saveServer').onclick = async () => {
   const server = $('server').value.trim() || DEFAULT_SERVER;
   await chrome.storage.sync.set({ server });
@@ -65,12 +73,16 @@ $('saveServer').onclick = async () => {
   setTimeout(() => {
     button.textContent = 'Save';
   }, 1500);
-  const s = await call({ type: 'getState' });
-  if (s && s.room) render(await call({ type: 'join', room: s.room }));
 };
 
-chrome.storage.sync.get({ server: DEFAULT_SERVER }).then(({ server }) => {
+chrome.storage.sync.get({ server: DEFAULT_SERVER, name: '' }).then(({ server, name }) => {
   $('server').value = server;
+  $('name').value = name;
+});
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'sync') return;
+  if (changes.name && document.activeElement !== $('name')) $('name').value = changes.name.newValue || '';
+  if (changes.server) $('server').value = changes.server.newValue || DEFAULT_SERVER;
 });
 refresh();
 setInterval(refresh, 1000);
