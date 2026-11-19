@@ -22,8 +22,8 @@ function render(s) {
   }
   if (!s.room) {
     status.textContent = s.hasVideo
-      ? 'Create a room and share the code, or join your friend\'s room.'
-      : 'No video on this page yet. Open the title you both want to watch.';
+      ? 'Create a room, or join one with a code.'
+      : 'Open the title you both want to watch.';
     $('out').hidden = false;
     $('in').hidden = true;
     return;
